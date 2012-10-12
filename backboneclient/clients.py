@@ -1,6 +1,6 @@
 from hyperadmin.clients.common import SimpleTemplateClient
 
-from emberclient.mediatypes import CollectionBackboneClientJSON
+from backboneclient.mediatypes import CollectionBackboneClientJSON
 
 class BackboneClient(SimpleTemplateClient):
     default_namespace = 'backboneclient'
