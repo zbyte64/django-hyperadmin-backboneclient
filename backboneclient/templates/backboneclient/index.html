@@ -25,6 +25,15 @@
 <p>
 Type "Applications" in your Javascript console to start
 </p>
+<pre>
+Applications.fetch()
+var group_entry = Applications.where({resource_class: "crudresource", resource_name:"group"})[0]
+var groupCollection = group_entry.getCollection() //get the collection for this resource item
+groupCollection.fetch() //fetch the groups, TODO: support pagination
+groupCollection.models //shows the existing groups
+groupCollection.create({}) //error
+groupCollection.create({'name':'test'}) //may give an error if the name is already taken
+</pre>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
   <script>window.jQuery || document.write('<script src="{{STATIC_URL}}/backboneclient/client/js/libs/jquery-1.7.2.min.js"><\/script>')</script>
   <script src="{{STATIC_URL}}backboneclient/underscore-min.js"></script>
@@ -33,7 +42,7 @@ Type "Applications" in your Javascript console to start
   
   <script>
 var Applications = new Hyperadmin.ResourceCollection();
-Applications.fetch();
+Applications.authenticate("admin", "admin", {"success":Applications.fetch});
 </script>
 </body>
 </html>

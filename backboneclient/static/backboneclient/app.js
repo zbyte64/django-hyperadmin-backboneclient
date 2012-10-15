@@ -27,7 +27,12 @@
     Hyperadmin.Model = Backbone.Model.extend({
         sync: Hyperadmin.sync,
         url: function() {
+          if (this.attributes && this.attributes.href) {
             return this.attributes.href
+          }
+          var base = getValue(this, 'urlRoot') || getValue(this.collection, 'url');
+          if (this.isNew()) return base;
+          return base + (base.charAt(base.length - 1) == '/' ? '' : '/') + encodeURIComponent(this.id) + '/';
         },
         parse: function(response) {
           if (response.collection) {
@@ -39,7 +44,7 @@
           var row = {"name":attr, "value":null};
           var index = 0;
           for(; index<this.attributes.data.length; index++) {
-            var c_row = this.attributes.data[i]
+            var c_row = this.attributes.data[index]
             if (c_row["name"]==attr) {
                 row = c_row
                 break;
@@ -76,20 +81,29 @@
           if (!this.attributes.data && attrs.data) {
               this.attributes = attrs
           } else {
+              if (!this.attributes.data) {
+                this.attributes = {"data":[]}
+              }
               var now = this.attributes;
               var escaped = this._escapedAttributes;
               var prev = this._previousAttributes || _.clone(this.attributes);
 
               // For each `set` attribute...
               for (attr in attrs) {
-                var row = {"name":attr, "value":null};
+                var row = {"name":attr, "value":null, "type":"text"};
                 var index = 0;
+                var new_attribute = true;
                 for(; index<this.attributes.data.length; index++) {
-                  var c_row = this.attributes.data[i]
+                  var c_row = this.attributes.data[index]
                   if (c_row["name"]==attr) {
                       row = c_row
+                      new_attributes = false;
                       break;
                   }
+                }
+                if (new_attribute) {
+                    this.attributes.data.push(row);
+                    index += 1;
                 }
                 val = attrs[attr];
 
@@ -104,7 +118,7 @@
 
                 // If the new and previous value differ, record the change.  If not,
                 // then remove changes for this attribute.
-                if (!_.isEqual(prev.data[index], val)){// || (_.has(now, attr) != _.has(prev, attr))) {
+                if (new_attribute || !_.isEqual(prev.data[index], val)){
                   this.changed[attr] = val;
                   if (!options.silent) this._pending[attr] = true;
                 } else {
@@ -124,6 +138,7 @@
         sync: Hyperadmin.sync,
         model: Hyperadmin.Model,
         parse: function(response) {
+            //TODO parse out forms and filters
             return response.collection.items;
         }
     })
@@ -140,8 +155,27 @@
     
     Hyperadmin.ResourceCollection = Hyperadmin.Collection.extend({
         model: Hyperadmin.ResourceModel,
-        url: $("body").attr("data-api-endpoint")
+        url: $("body").attr("data-api-endpoint"),
+        authenticate: function(username, password, options) {
+            var target = this.url + '-authentication/'
+            var payload = {'data': [
+                {"name":"username", "value":username, "type":"text"},
+                {"name":"password", "value":password, "type":"text"}
+            ]}
+            params = {"data": JSON.stringify(payload),
+                      "dataType": "json",
+                      "type": "POST",
+                      "accepts": {"json":Hyperadmin.ACCEPT},
+                      "contentType": Hyperadmin.CONTENT_TYPE,
+                      "url": target}
+            return $.ajax(_.extend(params, options));
+        }
     });
+    
+    var getValue = function(object, prop) {
+      if (!(object && object[prop])) return null;
+      return _.isFunction(object[prop]) ? object[prop]() : object[prop];
+    };
     
     return Hyperadmin
 
