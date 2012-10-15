@@ -1355,8 +1355,6 @@
       params.processData = false;
     }
     
-    console.log(['submit', method, _.extend(params, options)])
-
     // Make the request, allowing the user to override any Ajax options.
     return $.ajax(_.extend(params, options));
   };
