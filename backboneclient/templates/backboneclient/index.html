@@ -26,7 +26,6 @@
 Type "Applications" in your Javascript console to start
 </p>
 <pre>
-Applications.fetch()
 var group_entry = Applications.where({resource_class: "crudresource", resource_name:"group"})[0]
 var groupCollection = group_entry.getCollection() //get the collection for this resource item
 groupCollection.fetch() //fetch the groups, TODO: support pagination
@@ -42,7 +41,13 @@ groupCollection.create({'name':'test'}) //may give an error if the name is alrea
   
   <script>
 var Applications = new Hyperadmin.ResourceCollection();
-Applications.authenticate("admin", "admin", {"success":Applications.fetch});
+
+Applications.on("error", function() {
+    Applications.authenticate("admin", "admin", {"async":false});
+    Applications.fetch()
+});
+
+Applications.fetch()
 </script>
 </body>
 </html>
