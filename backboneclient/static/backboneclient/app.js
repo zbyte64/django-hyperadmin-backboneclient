@@ -36,6 +36,7 @@
         },
         parse: function(response) {
           if (response.collection) {
+              this._form_template = response.collection.template;
               return response.collection.items[0];
           }
           return response;
@@ -132,14 +133,34 @@
           if (!options.silent) this.change(options);
           return this;
         },
+        links: function() {
+            //TODO include response.collection.links
+            return this.attributes.links;
+        },
+        form_template: function() {
+            return this._form_template;
+        }
     });
     
     Hyperadmin.Collection = Backbone.Collection.extend({
         sync: Hyperadmin.sync,
         model: Hyperadmin.Model,
         parse: function(response) {
-            //TODO parse out forms and filters
-            return response.collection.items;
+            //parse out forms and filters
+            var items = response.collection.items;
+            this._links = response.collection.links || [];
+            this._queries = response.collection.queries || [];
+            this._form_template = response.collection.template;
+            return items
+        },
+        links: function() {
+            return this._links;
+        },
+        queries: function() {
+            return this._queries;
+        },
+        form_template: function() {
+            return this._form_template;
         }
     })
     
