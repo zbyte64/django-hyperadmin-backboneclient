@@ -7,7 +7,7 @@
       Hyperadmin = root.Hyperadmin = {};
     }
 
-    
+
     Hyperadmin.VERSION = '0.0.1';
     Hyperadmin.CONTENT_TYPE = 'application/vnd.Collection.hyperadmin.backboneclient+JSON';
     Hyperadmin.ACCEPT = Hyperadmin.CONTENT_TYPE ;
@@ -16,14 +16,14 @@
         if (!options) {options = {};}
         options.contentType = Hyperadmin.CONTENT_TYPE;
         options.accepts = {"json":Hyperadmin.ACCEPT};
-        
+
         if (!options.data && model && (method == 'create' || method == 'update')) {
           options.data = JSON.stringify(model.toJSON());
         }
-        
+
         return Backbone.sync(method, model, options);
     };
-    
+
     Hyperadmin.Model = Backbone.Model.extend({
         sync: Hyperadmin.sync,
         url: function() {
@@ -141,7 +141,7 @@
             return this._form_template;
         }
     });
-    
+
     Hyperadmin.Collection = Backbone.Collection.extend({
         sync: Hyperadmin.sync,
         model: Hyperadmin.Model,
@@ -163,7 +163,7 @@
             return this._form_template;
         }
     })
-    
+
     Hyperadmin.ResourceModel = Hyperadmin.Model.extend({
         idAttribute: "href",
         getCollection: function() {
@@ -173,10 +173,9 @@
             return new res_collection()
         }
     });
-    
+
     Hyperadmin.ResourceCollection = Hyperadmin.Collection.extend({
         model: Hyperadmin.ResourceModel,
-        url: $("body").attr("data-api-endpoint"),
         authenticate: function(username, password, options) {
             var target = this.url + '-authentication/'
             var payload = {'data': [
@@ -192,12 +191,12 @@
             return $.ajax(_.extend(params, options));
         }
     });
-    
+
     var getValue = function(object, prop) {
       if (!(object && object[prop])) return null;
       return _.isFunction(object[prop]) ? object[prop]() : object[prop];
     };
-    
+
     return Hyperadmin
 
 }).call(this);
