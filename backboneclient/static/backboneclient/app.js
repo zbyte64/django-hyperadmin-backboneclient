@@ -9,7 +9,7 @@
 
 
     Hyperadmin.VERSION = '0.0.1';
-    Hyperadmin.CONTENT_TYPE = 'application/vnd.Collection.hyperadmin.backboneclient+JSON';
+    Hyperadmin.CONTENT_TYPE = 'application/vnd.collection+json';
     Hyperadmin.ACCEPT = Hyperadmin.CONTENT_TYPE ;
 
     Hyperadmin.sync = function(method, model, options) {
@@ -24,6 +24,22 @@
         return Backbone.sync(method, model, options);
     };
 
+    Hyperadmin.Link = function(obj) {
+        var self = {}
+        self.attributes = obj;
+        self.follow = function() {
+            var link_collection = Hyperadmin.Collection.extend({url:self.attributes["href"]})
+            return new link_collection()
+        }
+        return self;
+    }
+
+    Hyperadmin.FormTemplate = function(obj) {
+        var self = {}
+        self.attributes = obj;
+        return self;
+    }
+
     Hyperadmin.Model = Backbone.Model.extend({
         sync: Hyperadmin.sync,
         url: function() {
@@ -36,7 +52,9 @@
         },
         parse: function(response) {
           if (response.collection) {
-              this._form_template = response.collection.template;
+              this._form_template = Hyperadmin.FormTemplate(response.collection.template);
+              this._links = _.map(response.collection.links || [], Hyperadmin.Link);
+              this._queries = _.map(response.collection.queries || [], Hyperadmin.Link);
               return response.collection.items[0];
           }
           return response;
@@ -134,8 +152,7 @@
           return this;
         },
         links: function() {
-            //TODO include response.collection.links
-            return this.attributes.links;
+            return _.union(_.map(this.attributes.links, Hyperadmin.Link), this._links)
         },
         form_template: function() {
             return this._form_template;
@@ -148,9 +165,9 @@
         parse: function(response) {
             //parse out forms and filters
             var items = response.collection.items;
-            this._links = response.collection.links || [];
-            this._queries = response.collection.queries || [];
-            this._form_template = response.collection.template;
+            this._links = _.map(response.collection.links || [], Hyperadmin.Link);
+            this._queries = _.map(response.collection.queries || [], Hyperadmin.Link);
+            this._form_template = Hyperadmin.FormTemplate(response.collection.template);
             return items
         },
         links: function() {
